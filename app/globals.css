@@ -1,49 +1,182 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer base {
-  html {
-    font-family: 'Inter', system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
+/* ─── Design tokens ─────────────────────────────────────────────────────────
+   Ljust tema primärt (mjukt vitt), mörkt som alternativ. Lime används för
+   fyllnad och stora former; text på/nära lime är alltid mörk. */
+:root {
+  --canvas: #f6f6f2;
+  --surface: #ffffff;
+  --surface-2: #efefe9;
+  --surface-3: #e6e6df;
+  --ink: #131411;
+  --ink-2: #5b5c55;
+  --ink-3: #8a8b83;
+  --line: rgba(19, 20, 17, 0.08);
+  --lime: #c8f53c;
+  --lime-strong: #b4e420;
+  --lime-soft: #eefbcf;
+  --lime-ink: #1d2805;
+  --accent: #4a6a00; /* mörkgrön text/länkar på ljust */
+  --sky: #dfeefc;
+  --sky-ink: #0f3a63;
+  --peach: #fde9dc;
+  --peach-ink: #6b2d0c;
+  --danger: #b4261a;
+  --danger-soft: #fdecea;
+  --shadow: 0 1px 2px rgba(19, 20, 17, 0.04), 0 8px 24px rgba(19, 20, 17, 0.06);
+  --tabbar: rgba(255, 255, 255, 0.82);
+  --hero: #131411;
+  --hero-ink: #f6f6f2;
+  color-scheme: light;
+}
 
-  body {
-    background-color: #0A0A0A;
-    color: white;
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --canvas: #0b0b0a;
+    --surface: #161614;
+    --surface-2: #1f1f1c;
+    --surface-3: #2a2a26;
+    --ink: #f3f3ee;
+    --ink-2: #a8a9a1;
+    --ink-3: #74756e;
+    --line: rgba(255, 255, 255, 0.08);
+    --lime-soft: rgba(200, 245, 60, 0.13);
+    --accent: #c8f53c;
+    --sky: rgba(120, 180, 255, 0.14);
+    --sky-ink: #b9dbff;
+    --peach: rgba(255, 160, 110, 0.14);
+    --peach-ink: #ffcfb3;
+    --danger: #ff7a6b;
+    --danger-soft: rgba(255, 90, 70, 0.14);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --tabbar: rgba(22, 22, 20, 0.82);
+    --hero: #22231f;
+    --hero-ink: #f3f3ee;
+    color-scheme: dark;
   }
 }
 
-@layer components {
-  .input {
-    @apply w-full rounded-lg px-3 py-2 text-sm text-white
-           placeholder:text-gray-500
-           focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent
-           disabled:opacity-50 disabled:cursor-not-allowed;
-    background-color: #1E1E1E;
-    border: 1px solid #2A2A2A;
-  }
+:root[data-theme="dark"] {
+  --canvas: #0b0b0a;
+  --surface: #161614;
+  --surface-2: #1f1f1c;
+  --surface-3: #2a2a26;
+  --ink: #f3f3ee;
+  --ink-2: #a8a9a1;
+  --ink-3: #74756e;
+  --line: rgba(255, 255, 255, 0.08);
+  --lime-soft: rgba(200, 245, 60, 0.13);
+  --accent: #c8f53c;
+  --sky: rgba(120, 180, 255, 0.14);
+  --sky-ink: #b9dbff;
+  --peach: rgba(255, 160, 110, 0.14);
+  --peach-ink: #ffcfb3;
+  --danger: #ff7a6b;
+  --danger-soft: rgba(255, 90, 70, 0.14);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --tabbar: rgba(22, 22, 20, 0.82);
+  --hero: #22231f;
+  --hero-ink: #f3f3ee;
+  color-scheme: dark;
+}
 
-  .btn-primary {
-    @apply px-4 py-2 rounded-lg text-sm font-semibold bg-brand-400 text-black
-           hover:bg-brand-500 active:bg-brand-600
-           disabled:opacity-50 disabled:cursor-not-allowed
-           transition-colors;
-  }
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-lime: var(--lime);
+  --color-lime-strong: var(--lime-strong);
+  --color-lime-soft: var(--lime-soft);
+  --color-lime-ink: var(--lime-ink);
+  --color-accent: var(--accent);
+  --color-sky: var(--sky);
+  --color-sky-ink: var(--sky-ink);
+  --color-peach: var(--peach);
+  --color-peach-ink: var(--peach-ink);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-hero: var(--hero);
+  --color-hero-ink: var(--hero-ink);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --shadow-card: var(--shadow);
+}
 
-  .btn-secondary {
-    @apply px-4 py-2 rounded-lg text-sm font-semibold text-white
-           hover:opacity-80
-           disabled:opacity-50 disabled:cursor-not-allowed
-           transition-colors;
-    background-color: #1E1E1E;
-    border: 1px solid #2A2A2A;
-  }
+/* Typskala anpassad för läsbarhet: brödtext 17 px. */
+@theme {
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.15rem;
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: 1.35rem;
+  --text-base: 1.0625rem;
+  --text-base--line-height: 1.55rem;
+  --text-lg: 1.25rem;
+  --text-lg--line-height: 1.7rem;
+  --text-xl: 1.5rem;
+  --text-xl--line-height: 1.95rem;
+  --text-2xl: 1.875rem;
+  --text-2xl--line-height: 2.25rem;
+  --text-3xl: 2.5rem;
+  --text-3xl--line-height: 2.75rem;
+  --text-4xl: 3.25rem;
+  --text-4xl--line-height: 1;
+  --text-5xl: 4.5rem;
+  --text-5xl--line-height: 1;
+  --radius-card: 1.5rem;
+}
 
-  .card {
-    @apply rounded-2xl p-5;
-    background-color: #141414;
-    border: 1px solid #2A2A2A;
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--text-base--line-height);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Fokusmarkering för tangentbord/skärmläsare */
+:focus-visible {
+  outline: 2.5px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+
+.safe-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom), 0px);
+}
+.safe-top {
+  padding-top: max(env(safe-area-inset-top), 0px);
+}
+
+/* Tunn, diskret scroll för horisontella listor */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }
