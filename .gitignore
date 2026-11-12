@@ -33,3 +33,6 @@ next-env.d.ts
 
 # python
 __pycache__/
+
+# local SQL with secrets (cron)
+*.local.sql
