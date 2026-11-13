@@ -18,7 +18,7 @@ export function VideoField({ exKey, name, initial }: { exKey: string; name: stri
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://www.youtube.com/watch?v=…"
           inputMode="url"
-          className="h-11 min-w-0 flex-1 rounded-xl bg-surface-2 px-3 text-sm outline-none focus:ring-2 focus:ring-accent"
+          className="h-11 min-w-0 flex-1 rounded-xl bg-surface-2 px-3 text-base outline-none focus:ring-2 focus:ring-accent"
         />
         <button
           type="button"

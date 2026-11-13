@@ -1,4 +1,4 @@
-import { requireMom } from "@/lib/data";
+import { getAuth, requireMom } from "@/lib/data";
 import { addDays, stockholmDate } from "@/lib/dates";
 import { TabBar } from "@/components/app/tab-bar";
 import { ToastProvider } from "@/components/ui/toast";
@@ -7,10 +7,12 @@ import { LogSheetProvider, type LogSummary } from "@/components/log/log-sheet";
 import type { InjectionSite } from "@/lib/types";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const { supabase, user, profile } = await requireMom();
+  const { supabase, user } = await getAuth();
   const today = stockholmDate();
 
-  const [intake, lastInj, diary, symptoms] = await Promise.all([
+  // Profile check runs in parallel with the queries instead of before them.
+  const [{ profile }, intake, lastInj, diary, symptoms] = await Promise.all([
+    requireMom(),
     supabase.from("intake_logs").select("kind, amount").eq("user_id", user.id).eq("date", today),
     supabase
       .from("injections")

@@ -135,22 +135,29 @@ function Menu({ onPick }: { onPick: (p: LogPanel) => void }) {
 // ─── Protein ────────────────────────────────────────────────────────────────
 function ProteinPanel({ s }: { s: LogSummary }) {
   const toast = useToast();
-  const [pending, start] = useTransition();
+  const [, start] = useTransition();
   const [total, setTotal] = useState(s.proteinToday);
   const [custom, setCustom] = useState(10);
   const nauseous = (s.symptoms?.nausea ?? 0) >= 1 || (s.symptoms?.vomiting ?? 0) >= 1;
   const [easyOnly, setEasyOnly] = useState(nauseous);
   const foods = easyOnly ? FOODS.filter((f) => f.easy) : FOODS;
 
-  const add = (amount: number, label: string) =>
+  const add = (amount: number, label: string) => {
+    // Update the number instantly; the save runs in the background.
+    setTotal((t) => t + amount);
     start(async () => {
-      setTotal((t) => t + amount);
-      const { id } = await addIntake("protein", amount, label);
-      toast(`+${amount} g protein`, id ? async () => {
+      const id = await addIntake("protein", amount, label).then((r) => r.id, () => null);
+      if (!id) {
+        setTotal((t) => t - amount);
+        toast("Det gick inte att spara just nu – prova igen om en stund");
+        return;
+      }
+      toast(`+${amount} g protein`, async () => {
         setTotal((t) => t - amount);
         await deleteIntake(id);
-      } : undefined);
+      });
     });
+  };
 
   return (
     <div className="flex flex-col gap-5">
@@ -193,7 +200,6 @@ function ProteinPanel({ s }: { s: LogSummary }) {
           <button
             key={f.key}
             type="button"
-            disabled={pending}
             onClick={() => add(f.protein, f.label)}
             className="flex min-h-[4.5rem] flex-col items-start justify-center rounded-2xl bg-surface px-4 py-3 text-left shadow-card active:scale-[0.98]"
           >
@@ -208,7 +214,7 @@ function ProteinPanel({ s }: { s: LogSummary }) {
       <div className="flex flex-col gap-2">
         <p className="px-1 text-sm font-medium text-ink-2">Egen mängd</p>
         <Stepper value={custom} onChange={setCustom} step={5} min={5} max={100} unit="g" />
-        <Button variant="secondary" disabled={pending} onClick={() => add(custom, "Egen")}>
+        <Button variant="secondary" onClick={() => add(custom, "Egen")}>
           Lägg till {custom} g
         </Button>
       </div>
@@ -219,17 +225,24 @@ function ProteinPanel({ s }: { s: LogSummary }) {
 // ─── Water ──────────────────────────────────────────────────────────────────
 function WaterPanel({ s }: { s: LogSummary }) {
   const toast = useToast();
-  const [pending, start] = useTransition();
+  const [, start] = useTransition();
   const [total, setTotal] = useState(s.waterToday);
-  const add = (n: number) =>
+  const add = (n: number) => {
+    // Update the glasses instantly; the save runs in the background.
+    setTotal((t) => t + n);
     start(async () => {
-      setTotal((t) => t + n);
-      const { id } = await addIntake("water", n, n === 1 ? "Glas" : `${n} glas`);
-      toast(n === 1 ? "+1 glas vatten" : `+${n} glas vatten`, id ? async () => {
+      const id = await addIntake("water", n, n === 1 ? "Glas" : `${n} glas`).then((r) => r.id, () => null);
+      if (!id) {
+        setTotal((t) => t - n);
+        toast("Det gick inte att spara just nu – prova igen om en stund");
+        return;
+      }
+      toast(n === 1 ? "+1 glas vatten" : `+${n} glas vatten`, async () => {
         setTotal((t) => t - n);
         await deleteIntake(id);
-      } : undefined);
+      });
     });
+  };
   const glasses = Array.from({ length: Math.max(s.waterGoal, Math.ceil(total)) });
 
   return (
@@ -249,10 +262,10 @@ function WaterPanel({ s }: { s: LogSummary }) {
         </div>
         <p className="mt-3 text-sm opacity-80">1 glas = 2,5 dl. Lite extra på träningsdagar och varma dagar.</p>
       </div>
-      <Button size="lg" disabled={pending} onClick={() => add(1)} className="w-full">
+      <Button size="lg" onClick={() => add(1)} className="w-full">
         <Droplet size={22} /> +1 glas
       </Button>
-      <Button variant="secondary" disabled={pending} onClick={() => add(2)} className="w-full">
+      <Button variant="secondary" onClick={() => add(2)} className="w-full">
         +2 glas
       </Button>
       {s.lithium === "yes" && (
@@ -279,13 +292,21 @@ function MovePanel({ onDone }: { onDone: () => void }) {
   const [songs, setSongs] = useState(1);
   const [outdoor, setOutdoor] = useState(false);
 
-  const save = (k: ActivityKind, mins: number, s: number, title: string, out = false) =>
+  const save = (k: ActivityKind, mins: number, s: number, title: string, out = false) => {
+    // Close the sheet right away; the save finishes in the background and then
+    // shows the toast (and any celebration).
+    onDone();
     start(async () => {
-      const { id, celebration } = await logActivity({ kind: k, minutes: mins, songs: s, title, outdoor: out });
-      onDone();
-      toast("Rörelse sparad – den räknas", id ? () => deleteActivity(id) : undefined);
+      const res = await logActivity({ kind: k, minutes: mins, songs: s, title, outdoor: out }).catch(() => null);
+      if (!res?.id) {
+        toast("Det gick inte att spara just nu – prova igen om en stund");
+        return;
+      }
+      const { id, celebration } = res;
+      toast("Rörelse sparad – den räknas", () => deleteActivity(id));
       celebrate(celebration);
     });
+  };
 
   if (!kind) {
     return (

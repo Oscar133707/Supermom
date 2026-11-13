@@ -1,27 +1,38 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import { Check, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { addChecklistItem, deleteChecklistItem, toggleChecklist } from "@/app/(app)/actions";
 
-export function Checklist({ items }: { items: { id: string; text: string; done: boolean; custom: boolean }[] }) {
+type Item = { id: string; text: string; done: boolean; custom: boolean };
+type Change = { type: "toggle"; id: string; done: boolean } | { type: "delete"; id: string };
+
+export function Checklist({ items }: { items: Item[] }) {
   const [text, setText] = useState("");
   const [pending, start] = useTransition();
+  // Ticks and deletions show instantly; the server confirms in the background.
+  const [shown, apply] = useOptimistic(items, (list: Item[], c: Change) =>
+    c.type === "delete" ? list.filter((i) => i.id !== c.id) : list.map((i) => (i.id === c.id ? { ...i, done: c.done } : i)),
+  );
   return (
     <div className="flex flex-col gap-5">
       <ul className="flex flex-col gap-2">
-        {items.map((i) => (
+        {shown.map((i) => (
           <li key={i.id} className="flex items-start gap-3 rounded-2xl bg-surface p-4 shadow-card">
             <button
               type="button"
               aria-label={i.done ? "Markera som inte klar" : "Markera som klar"}
               aria-pressed={i.done}
-              disabled={pending}
-              onClick={() => start(() => toggleChecklist(i.id, !i.done))}
+              onClick={() =>
+                start(async () => {
+                  apply({ type: "toggle", id: i.id, done: !i.done });
+                  await toggleChecklist(i.id, !i.done);
+                })
+              }
               className={cn(
-                "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2",
+                "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 transition-colors duration-150",
                 i.done ? "border-lime bg-lime text-lime-ink" : "border-ink-3",
               )}
             >
@@ -32,7 +43,12 @@ export function Checklist({ items }: { items: { id: string; text: string; done: 
               <button
                 type="button"
                 aria-label="Ta bort"
-                onClick={() => start(() => deleteChecklistItem(i.id))}
+                onClick={() =>
+                  start(async () => {
+                    apply({ type: "delete", id: i.id });
+                    await deleteChecklistItem(i.id);
+                  })
+                }
                 className="-mr-1 flex h-9 w-9 items-center justify-center text-ink-3"
               >
                 <Trash2 size={16} />

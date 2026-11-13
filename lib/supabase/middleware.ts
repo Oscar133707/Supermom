@@ -25,10 +25,11 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  // Refreshes the session cookie. Do not remove.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Refreshes the session cookie when needed. Do not remove.
+  // getClaims() verifies the JWT locally against the project's cached public
+  // signing key (ES256) — no round trip to Supabase Auth on every request.
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims ?? null;
 
   const { pathname } = request.nextUrl;
   const isPublic = PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"));

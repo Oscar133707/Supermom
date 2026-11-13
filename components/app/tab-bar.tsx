@@ -24,6 +24,8 @@ export function TabBar() {
       <Link
         key={t.href}
         href={t.href}
+        // Prefetch the full page (not just the loading shell) so a tap switches instantly.
+        prefetch={true}
         className={cn(
           "flex h-16 flex-1 flex-col items-center justify-center gap-1 text-xs font-medium transition-colors",
           active ? "text-ink" : "text-ink-3",

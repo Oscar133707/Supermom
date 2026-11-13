@@ -26,17 +26,19 @@ export function PhaseProposal({ phase }: { phase: number }) {
         value={msg}
         onChange={(e) => setMsg(e.target.value)}
         placeholder="Valfri hälsning, t.ex. ”Du har varit så stark!”"
-        className="h-12 w-full rounded-2xl bg-surface-2 px-4 text-sm outline-none focus:ring-2 focus:ring-accent"
+        // 16 px text: smaller makes iPhone zoom in when the field is tapped.
+        className="h-12 w-full rounded-2xl bg-surface-2 px-4 text-base outline-none focus:ring-2 focus:ring-accent"
       />
-      <div className="flex gap-2">
-        {phase > 0 && (
-          <Button variant="secondary" className="flex-1" disabled={pending} onClick={() => propose(phase - 1)}>
-            Föreslå lättare fas
+      {/* Stacked: long phase names ("Styrka & löpförberedelse") never get squeezed. */}
+      <div className="flex flex-col gap-2">
+        {phase < PHASES.length - 1 && (
+          <Button className="h-auto min-h-14 py-3 text-center" disabled={pending} onClick={() => propose(phase + 1)}>
+            Föreslå {PHASES[phase + 1].name}
           </Button>
         )}
-        {phase < PHASES.length - 1 && (
-          <Button className="flex-1" disabled={pending} onClick={() => propose(phase + 1)}>
-            Föreslå {PHASES[phase + 1].name}
+        {phase > 0 && (
+          <Button variant="secondary" disabled={pending} onClick={() => propose(phase - 1)}>
+            Föreslå lättare fas
           </Button>
         )}
       </div>
@@ -68,7 +70,7 @@ export function LevelProposal({ levels }: { levels: Record<string, number> }) {
                   toast("Förslag skickat");
                 })
               }
-              className="h-10 w-10 rounded-xl bg-surface-2 text-lg font-semibold disabled:opacity-30"
+              className="h-11 w-11 shrink-0 rounded-xl bg-surface-2 text-lg font-semibold disabled:opacity-30"
               aria-label={`Föreslå lättare ${ex.name}`}
             >
               −
@@ -82,7 +84,7 @@ export function LevelProposal({ levels }: { levels: Record<string, number> }) {
                   toast("Förslag skickat");
                 })
               }
-              className="h-10 w-10 rounded-xl bg-surface-2 text-lg font-semibold disabled:opacity-30"
+              className="h-11 w-11 shrink-0 rounded-xl bg-surface-2 text-lg font-semibold disabled:opacity-30"
               aria-label={`Föreslå svårare ${ex.name}`}
             >
               +

@@ -18,12 +18,21 @@ import type {
   Symptoms,
 } from "@/lib/types";
 
-export const getSession = cache(async () => {
+/**
+ * Who is signed in. getClaims() verifies the JWT locally (asymmetric signing
+ * key, cached JWKS) instead of calling Supabase Auth — saves a network round
+ * trip on every page render and server action.
+ */
+export const getAuth = cache(async () => {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  const { data } = await supabase.auth.getClaims();
+  const sub = data?.claims?.sub;
+  if (!sub) redirect("/login");
+  return { supabase, user: { id: sub } };
+});
+
+export const getSession = cache(async () => {
+  const { supabase, user } = await getAuth();
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single<Profile>();
   if (!profile) redirect("/login");
   return { supabase, user, profile };
@@ -60,7 +69,7 @@ export const DEFAULT_STATE = (userId: string, today: string): ProgramState => ({
 
 /** Everything the Idag-screen (and admin overview) needs for one user. */
 export async function loadDashboard(userId: string) {
-  const { supabase } = await getSession();
+  const { supabase } = await getAuth();
   const today = stockholmDate();
   const since = addDays(today, -90);
 

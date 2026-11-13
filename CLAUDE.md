@@ -60,6 +60,9 @@ Next.js 15 (App Router, Server Actions) · React 19 · TypeScript · Tailwind CS
 - Undvik `typeof window`/`navigator` i render (hydreringsfel) – läs i `useEffect`.
 - Webben kan inte schemalägga lokala notiser – påminnelser skickas från servern.
 - Admin kan läsa men aldrig skriva mammas loggar (RLS). Testa RLS-ändringar noga.
+- **Prestanda:** använd `getAuth()`/`getClaims()` (lokal JWT-kontroll, ES256), aldrig `auth.getUser()` per request – det är ett extra nätverksanrop på varje sida och action. Kör profilkontroll och datafrågor parallellt (`Promise.all`).
+- **Direkt respons:** uppdatera lokal state *före* `start(...)` (eller använd `useOptimistic`) – state som sätts inuti en async transition syns först när servern svarat. Lås inte knappar under sparning om upprepade tryck är rimliga; rulla tillbaka och visa ett vänligt fel om sparningen misslyckas.
+- Nya sidor ska ha en `loading.tsx` (se `components/ui/skeleton.tsx`) så att tryck alltid ger omedelbar respons.
 
 ## Git
 

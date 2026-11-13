@@ -92,13 +92,20 @@ export default async function AdminHome() {
       <div>
         <SectionTitle>Senaste 14 dagarna</SectionTitle>
         <Card>
-          <div className="flex justify-between">
+          {/* Two rows of seven – fits any phone width without crowding. */}
+          <div className="grid grid-cols-7 gap-y-3">
             {Array.from({ length: 14 }).map((_, i) => {
               const date = addDays(from14, i);
               return (
                 <div key={date} className="flex flex-col items-center gap-1.5">
-                  <span className="text-[10px] text-ink-3">{weekdayShort(weekdayIndex(date))}</span>
-                  <span className={cn("h-5 w-5 rounded-full", activeDates.has(date) ? "bg-lime" : "bg-surface-2", date === today && "ring-2 ring-ink/50")} />
+                  <span className="text-xs text-ink-3">{weekdayShort(weekdayIndex(date))}</span>
+                  <span
+                    className={cn(
+                      "h-7 w-7 rounded-full",
+                      activeDates.has(date) ? "bg-lime" : "bg-surface-2",
+                      date === today && "ring-2 ring-ink/50",
+                    )}
+                  />
                 </div>
               );
             })}
